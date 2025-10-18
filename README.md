@@ -10,6 +10,7 @@ It serves as a private R&D environment for refining orchestration logic before p
 
 ## Structure
 
+```plaintext
 /README.md
     → Main project overview and licence notice.
 
@@ -24,11 +25,7 @@ It serves as a private R&D environment for refining orchestration logic before p
 
 /data/sample_companyhouse.json
     → Placeholder dataset for Companies House API responses.
-
-    - **orchestration-ledger.md** – human-readable event log.  
-- **.github/workflows/** – automation placeholders for API integration.  
-- **config/metadata.yml** – company and filing cycle metadata.  
-- **data/** – API samples and future compliance data extracts.
+```
 
 ## Status
 
