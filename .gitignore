@@ -1,0 +1,10 @@
+# Eckohaus Orchestration Pilot
+# Ignore system, build, and temporary data files
+
+.DS_Store
+*.log
+*.tmp
+*.bak
+data/*.json
+data/*.csv
+secrets/
