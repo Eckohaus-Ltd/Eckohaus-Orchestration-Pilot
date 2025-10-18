@@ -1,12 +1,13 @@
 name: Compliance Check (Companies House)
 
 on:
-  workflow_dispatch:  # manual run from the Actions tab
+  workflow_dispatch:  # Manual run from the Actions tab
   schedule:
-    - cron: "0 10 * * 1"  # runs every Monday at 10:00 UTC for periodic checks
+    - cron: "0 10 * * 1"  # Runs every Monday at 10:00 UTC for periodic checks
 
 jobs:
   check-company-status:
+    name: Query Companies House for Eckohaus Ltd
     runs-on: ubuntu-latest
 
     steps:
@@ -21,6 +22,7 @@ jobs:
           COMPANY_NUMBER=$(grep 'company_number:' config/metadata.yml | awk '{print $2}')
           echo "company_name=$COMPANY_NAME" >> $GITHUB_OUTPUT
           echo "company_number=$COMPANY_NUMBER" >> $GITHUB_OUTPUT
+          echo "Loaded company: $COMPANY_NAME ($COMPANY_NUMBER)"
 
       - name: Query Companies House API
         id: ch_query
@@ -29,17 +31,28 @@ jobs:
           COMPANY_NUMBER: ${{ steps.metadata.outputs.company_number }}
         run: |
           echo "Querying Companies House API for company $COMPANY_NUMBER"
-          curl -u $CH_API_KEY: \
-            https://api.company-information.service.gov.uk/company/$COMPANY_NUMBER \
-            -o response.json -s -w "%{http_code}" > status_code.txt
+          AUTH_HEADER=$(echo -n "$CH_API_KEY:" | base64)
+          curl -s -H "Authorization: Basic $AUTH_HEADER" \
+               "https://api.company-information.service.gov.uk/company/$COMPANY_NUMBER" \
+               -o response.json
+
+          if [ ! -s response.json ]; then
+            echo "❌ No response received or file empty."
+            exit 1
+          else
+            echo "✅ Response saved to response.json"
+          fi
 
       - name: Display response
         run: |
           echo "Companies House API response:"
-          cat response.json | jq .
+          sudo apt-get update -qq && sudo apt-get install -y jq -qq
+          jq . response.json || cat response.json
 
       - name: Store response for audit trail
         if: always()
         run: |
           mkdir -p data/responses
-          cp response.json data/responses/response_$(date +'%Y%m%d_%H%M').json
+          TIMESTAMP=$(date +'%Y%m%d_%H%M')
+          cp response.json "data/responses/response_${TIMESTAMP}.json"
+          echo "Response archived at data/responses/response_${TIMESTAMP}.json"
