@@ -1,0 +1,45 @@
+name: Compliance Check (Companies House)
+
+on:
+  workflow_dispatch:  # manual run from the Actions tab
+  schedule:
+    - cron: "0 10 * * 1"  # runs every Monday at 10:00 UTC for periodic checks
+
+jobs:
+  check-company-status:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Load metadata
+        id: metadata
+        run: |
+          echo "Loading metadata from config/metadata.yml"
+          COMPANY_NAME=$(grep 'name:' config/metadata.yml | awk '{print $2" "$3}')
+          COMPANY_NUMBER=$(grep 'company_number:' config/metadata.yml | awk '{print $2}')
+          echo "company_name=$COMPANY_NAME" >> $GITHUB_OUTPUT
+          echo "company_number=$COMPANY_NUMBER" >> $GITHUB_OUTPUT
+
+      - name: Query Companies House API
+        id: ch_query
+        env:
+          CH_API_KEY: ${{ secrets.CH_API_KEY }}
+          COMPANY_NUMBER: ${{ steps.metadata.outputs.company_number }}
+        run: |
+          echo "Querying Companies House API for company $COMPANY_NUMBER"
+          curl -u $CH_API_KEY: \
+            https://api.company-information.service.gov.uk/company/$COMPANY_NUMBER \
+            -o response.json -s -w "%{http_code}" > status_code.txt
+
+      - name: Display response
+        run: |
+          echo "Companies House API response:"
+          cat response.json | jq .
+
+      - name: Store response for audit trail
+        if: always()
+        run: |
+          mkdir -p data/responses
+          cp response.json data/responses/response_$(date +'%Y%m%d_%H%M').json
