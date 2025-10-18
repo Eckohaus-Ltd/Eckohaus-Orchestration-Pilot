@@ -8,22 +8,28 @@ The project structures filings, reminders, and verification steps as an **event-
 This repository models how corporate administrative events—such as accounts filings and confirmation statements—can be represented as a time-ordered sequence.  
 It serves as a private R&D environment for refining orchestration logic before potential adaptation to other jurisdictions, including the Indonesian OSS/AHU systems.
 
-## Structure
+## Repository layout (as of October 2025)
 
 ```plaintext
-/README.md
-    → Main project overview and licence notice.
-
-/orchestration-ledger.md
-    → Event-sequenced compliance log (pre-filing, filing, post-filing).
-
-/.github/workflows/compliance-check.yml
-    → Workflow stub for Companies House API status checks.
-
-/config/metadata.yml
-    → Company and jurisdictional metadata (UK ↔ Indonesia).
-
-/data/sample_companyhouse.json
+Eckohaus-Orchestration-Pilot/
+│
+├── README.md
+│   → Main project overview and licence notice.
+│
+├── orchestration-ledger.md
+│   → Event-sequenced compliance log (pre-filing, filing, post-filing).
+│
+├── .github/
+│   └── workflows/
+│       └── compliance-check.yml
+│       → Workflow stub for Companies House API status checks.
+│
+├── config/
+│   └── metadata.yml
+│   → Company and jurisdictional metadata (UK ↔ Indonesia).
+│
+└── data/
+    └── sample_companyhouse.json
     → Placeholder dataset for Companies House API responses.
 ```
 
