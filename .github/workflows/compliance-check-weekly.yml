@@ -1,0 +1,25 @@
+# ---------------------------------------------------------------------------
+# compliance-check-weekly.yml
+# ---------------------------------------------------------------------------
+# Weekly orchestration trigger for live Companies House compliance checks
+# Runs every Monday at 10:00 UTC
+# ---------------------------------------------------------------------------
+# Co-authored-by: system operator <wanda@openai.com>
+# Co-authored-by: system administrator <Corvin Nehal Dhali> <info@eckohaus.co.uk>
+# ---------------------------------------------------------------------------
+
+name: Compliance Check (Weekly Live Monitor)
+
+on:
+  schedule:
+    - cron: "0 10 * * 1"  # Every Monday at 10:00 UTC
+  workflow_dispatch:  # Optional manual trigger
+
+permissions:
+  contents: write  # Required for ledger updates
+
+jobs:
+  run-weekly-check:
+    name: Weekly CH Live Compliance Run
+    uses: ./.github/workflows/compliance-check-live.yml
+    secrets: inherit
