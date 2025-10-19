@@ -2,8 +2,8 @@ name: Compliance Check (Companies House - Live)
 
 on:
   workflow_dispatch:  # Manual run from the Actions tab
-  schedule:
-    - cron: "0 10 * * 1"  # Runs every Monday at 10:00 UTC for periodic live checks
+  # schedule:
+  #   - cron: "0 10 * * 1"  # Disabled during development
 
 permissions:
   contents: write  # allow ledger commits
