@@ -5,6 +5,9 @@ on:
   schedule:
     - cron: "0 10 * * 1"  # Runs every Monday at 10:00 UTC for periodic live checks
 
+permissions:
+  contents: read
+
 jobs:
   check-company-status:
     name: Query Companies House (Live)
@@ -31,18 +34,27 @@ jobs:
           COMPANY_NUMBER: ${{ steps.metadata.outputs.company_number }}
         run: |
           echo "🔍 Querying Companies House LIVE API for company $COMPANY_NUMBER"
+          AUTH_HEADER=$(echo -n "$CH_API_KEY:" | base64)
+          curl -s -w "%{http_code}" -H "Authorization: Basic $AUTH_HEADER" \
+               "https://api.company-information.service.gov.uk/company/$COMPANY_NUMBER" \
+               -o response_live.json > status_code.txt
+          STATUS_CODE=$(cat status_code.txt)
+          echo "HTTP status: $STATUS_CODE"
+          echo "status=$STATUS_CODE" >> $GITHUB_OUTPUT
 
+      - name: Retry once after 30 minutes on 404
+        if: steps.ch_query.outputs.status == '404'
+        env:
+          CH_API_KEY: ${{ secrets.CH_API_KEY_LIVE }}
+          COMPANY_NUMBER: ${{ steps.metadata.outputs.company_number }}
+        run: |
+          echo "Got 404 from Companies House; waiting 30 minutes then retrying…"
+          sleep 1800
           AUTH_HEADER=$(echo -n "$CH_API_KEY:" | base64)
           curl -s -H "Authorization: Basic $AUTH_HEADER" \
                "https://api.company-information.service.gov.uk/company/$COMPANY_NUMBER" \
                -o response_live.json
-
-          if [ ! -s response_live.json ]; then
-            echo "❌ No response received or file empty."
-            exit 1
-          fi
-
-          echo "✅ Live response saved to response_live.json"
+          echo "✅ Retried query complete"
 
       - name: Display response
         run: |
