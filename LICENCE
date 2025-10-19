@@ -1,12 +1,23 @@
+# Private Use Licence
+
 © 2025 Eckohaus Ltd. All rights reserved.
 
-This repository and its contents are the property of Eckohaus Ltd and are
-intended solely for internal research, administrative, and compliance
-development purposes.
+This repository and its contents are the intellectual property of **Eckohaus Ltd** and are provided
+for internal research, development, and compliance orchestration purposes only.
 
-No part of this repository, including its documentation, configuration files,
-or conceptual structures, may be copied, distributed, or used outside Eckohaus Ltd
-without prior written permission.
+No portion of this repository, including code, data, documentation, or workflows, may be:
+- redistributed or published publicly;
+- used for commercial or production purposes outside Eckohaus Ltd;
+- integrated into other systems or platforms without explicit written permission.
 
-This repository is maintained as a private working archive.
-Future public derivatives, if any, may be released under a separate open licence.
+This licence grants permission for internal private use within the scope of the
+**Eckohaus Orchestration Pilot** project, including related API integrations,
+infrastructure tests, and dual-jurisdiction research (UK ↔ Indonesia).
+
+For licensing or partnership inquiries, contact:
+**info@eckohaus.blog**
+
+---
+
+Maintained under the **Eckohaus Orchestration Pilot**  
+Part of the **Eckohaus Ltd** internal R&D framework.
