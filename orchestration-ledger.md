@@ -27,10 +27,17 @@ These may include:
 
 ---
 
-## Next Steps
-- Finalise live API key authentication.
-- Extend workflow to parse JSON and surface next filing deadlines.
-- Integrate reminder scheduling into GitHub Actions or external cron system.
+## Pending Orchestration Schedule
+
+| Target Period | Scope | Notes |
+|----------------|--------|-------|
+| December 2025 | Pre-filing cycle | Initial live data pull and status check before January 2026 deadlines. |
+| Q1 2026 | Filing + confirmation events | To synchronise Companies House filings with HMRC PAYE and pension reconciliations. |
+| Mid-2026 | API integration review | Assess Companies House → internal ledger consistency for future automation. |
+
+---
+
+_All future schedule events are provisional until verified against Companies House and HMRC confirmation dates._
 
 ---
 
