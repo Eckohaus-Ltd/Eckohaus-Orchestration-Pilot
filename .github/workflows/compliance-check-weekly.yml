@@ -1,37 +1,114 @@
 # ---------------------------------------------------------------------------
-# compliance-check-weekly.yml
+# Eckohaus Orchestration Pilot
+# Compliance Check (Companies House - Weekly)
 # ---------------------------------------------------------------------------
-# Weekly orchestration trigger for live Companies House compliance checks
-# Runs every Monday at 10:00 UTC
+# Performs a weekly Companies House compliance query for Eckohaus Ltd.
+# Retrieves and archives live company data, appends summary entries to
+# orchestration-ledger.md, and ensures consistency with the live workflow.
+# ---------------------------------------------------------------------------
+
+name: Compliance Check (Companies House - Weekly)
+
+on:
+  schedule:
+    - cron: "0 10 * * 1"  # Every Monday at 10:00 UTC (weekly run)
+  workflow_dispatch:  # Allow manual triggering during review
+
+permissions:
+  contents: write  # allow workflow to push ledger commits
+
+jobs:
+  check-company-status-weekly:
+    name: Query Companies House (Weekly Live Check)
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Load metadata
+        id: metadata
+        run: |
+          echo "Loading metadata from config/metadata.yml"
+          COMPANY_NAME=$(grep 'name:' config/metadata.yml | awk '{print $2" "$3}')
+          COMPANY_NUMBER=$(grep 'company_number:' config/metadata.yml | awk '{print $2}')
+          echo "company_name=$COMPANY_NAME" >> $GITHUB_OUTPUT
+          echo "company_number=$COMPANY_NUMBER" >> $GITHUB_OUTPUT
+          echo "✅ Loaded company: $COMPANY_NAME ($COMPANY_NUMBER)"
+
+      - name: Query Companies House API (Weekly)
+        id: ch_query
+        env:
+          CH_API_KEY: ${{ secrets.CH_API_KEY_LIVE }}
+          COMPANY_NUMBER: ${{ steps.metadata.outputs.company_number }}
+        run: |
+          echo "🔍 Querying Companies House LIVE API for weekly company status check: $COMPANY_NUMBER"
+          AUTH_HEADER=$(echo -n "$CH_API_KEY:" | base64)
+          curl -s -w "%{http_code}" -H "Authorization: Basic $AUTH_HEADER" \
+               "https://api.company-information.service.gov.uk/company/$COMPANY_NUMBER" \
+               -o response_weekly.json > status_code.txt
+          STATUS_CODE=$(cat status_code.txt)
+          echo "HTTP status: $STATUS_CODE"
+          echo "status=$STATUS_CODE" >> $GITHUB_OUTPUT
+
+      - name: Conditional weekday retry on 404 (UK hours)
+        if: steps.ch_query.outputs.status == '404'
+        env:
+          CH_API_KEY: ${{ secrets.CH_API_KEY_LIVE }}
+          COMPANY_NUMBER: ${{ steps.metadata.outputs.company_number }}
+        run: |
+          # Retry only during UK business hours (Mon–Fri, 09:00–17:00 UTC)
+          UK_HOUR=$(date -u +"%H")
+          UK_DAY=$(date -u +"%u")  # 1=Mon … 7=Sun
+          if [ "$UK_DAY" -ge 1 ] && [ "$UK_DAY" -le 5 ] && [ "$UK_HOUR" -ge 9 ] && [ "$UK_HOUR" -lt 17 ]; then
+            echo "🕒 Within UK business hours; waiting 15 minutes then retrying…"
+            sleep 900
+            AUTH_HEADER=$(echo -n "$CH_API_KEY:" | base64)
+            curl -s -H "Authorization: Basic $AUTH_HEADER" \
+                 "https://api.company-information.service.gov.uk/company/$COMPANY_NUMBER" \
+                 -o response_weekly.json
+            echo "✅ Retried weekly query complete"
+          else
+            echo "🕓 Outside UK business hours — skipping retry until next run."
+          fi
+
+      - name: Display response
+        run: |
+          echo "📄 Companies House LIVE API response (Weekly):"
+          sudo apt-get update -qq && sudo apt-get install -y jq -qq
+          jq . response_weekly.json || cat response_weekly.json
+
+      - name: Store response for audit trail
+        if: always()
+        run: |
+          mkdir -p data/responses
+          TIMESTAMP=$(date +'%Y%m%d_%H%M')
+          cp response_weekly.json "data/responses/response_weekly_${TIMESTAMP}.json"
+          echo "🗂️ Weekly response archived at data/responses/response_weekly_${TIMESTAMP}.json"
+
+      - name: Append summary to orchestration-ledger.md
+        if: success()
+        run: |
+          TS=$(date -u +'%Y-%m-%d %H:%M UTC')
+          FILE="data/responses/response_weekly_$(date +'%Y%m%d_%H%M').json"
+          echo "| ${TS} | Weekly CH live check | Archived ${FILE} | CH live API |" >> orchestration-ledger.md
+          echo "✅ Ledger updated"
+
+      - name: Commit ledger update
+        if: success()
+        env:
+          GIT_AUTHOR_NAME: "Eckohaus Bot"
+          GIT_AUTHOR_EMAIL: "info@eckohaus.co.uk"
+          GIT_COMMITTER_NAME: "Eckohaus Bot"
+          GIT_COMMITTER_EMAIL: "info@eckohaus.co.uk"
+        run: |
+          git add orchestration-ledger.md data/responses/*.json || true
+          git commit -m "Weekly CH compliance check: archive + ledger update" \
+            -m "Co-authored-by: system operator <wanda@openai.com>" \
+            -m "Co-authored-by: system administrator <Corvin Nehal Dhali> <info@eckohaus.co.uk>" || echo "No changes to commit"
+          git push || true
+
 # ---------------------------------------------------------------------------
 # Co-authored-by: system operator <wanda@openai.com>
 # Co-authored-by: system administrator <Corvin Nehal Dhali> <info@eckohaus.co.uk>
 # ---------------------------------------------------------------------------
-
-name: Compliance Check (Weekly Live Monitor)
-
-on:
-  schedule:
-    - cron: "0 10 * * 1"  # Every Monday at 10:00 UTC
-  workflow_dispatch:  # Optional manual trigger
-
-permissions:
-  contents: write  # Required for ledger updates
-
-jobs:
-  run-weekly-check:
-    name: Weekly CH Live Compliance Run
-    uses: ./.github/workflows/compliance-check-live.yml
-    secrets: inherit
-
-    # -----------------------------------------------------------------------
-    # Optional: Append a "next scheduled run" note to orchestration-ledger.md
-    # Enable once filing cadence tracking or jurisdictional scheduling expands.
-    # -----------------------------------------------------------------------
-    # steps:
-    #   - name: Append next run reminder
-    #     if: success()
-    #     run: |
-    #       NEXT_RUN=$(date -u -d "+7 days" +"%Y-%m-%d 10:00 UTC")
-    #       echo "| $(date -u +'%Y-%m-%d %H:%M UTC') | Next scheduled CH check | ${NEXT_RUN} |" >> orchestration-ledger.md
-    #       echo "🗓️ Logged next run: ${NEXT_RUN}"
