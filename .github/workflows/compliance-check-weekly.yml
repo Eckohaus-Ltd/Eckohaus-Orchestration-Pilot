@@ -23,3 +23,15 @@ jobs:
     name: Weekly CH Live Compliance Run
     uses: ./.github/workflows/compliance-check-live.yml
     secrets: inherit
+
+    # -----------------------------------------------------------------------
+    # Optional: Append a "next scheduled run" note to orchestration-ledger.md
+    # Enable once filing cadence tracking or jurisdictional scheduling expands.
+    # -----------------------------------------------------------------------
+    # steps:
+    #   - name: Append next run reminder
+    #     if: success()
+    #     run: |
+    #       NEXT_RUN=$(date -u -d "+7 days" +"%Y-%m-%d 10:00 UTC")
+    #       echo "| $(date -u +'%Y-%m-%d %H:%M UTC') | Next scheduled CH check | ${NEXT_RUN} |" >> orchestration-ledger.md
+    #       echo "🗓️ Logged next run: ${NEXT_RUN}"
