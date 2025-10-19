@@ -1,16 +1,24 @@
-# Eckohaus Orchestration Pilot
+# 🧭 Eckohaus Orchestration Pilot
 
-A pilot repository demonstrating the orchestration of corporate compliance events for **Eckohaus Ltd** using the **Companies House API**.  
-The project structures filings, reminders, and verification steps as an **event-sequenced ledger**, forming a prototype for dual-jurisdiction workflows (UK ↔ Indonesia).
+_© 2025 Eckohaus Ltd — Internal Research & Development Repository_  
+_This repository underpins the automated compliance orchestration system integrating Eckohaus Ltd’s UK filings (Companies House, HMRC) with internal workflow automation._
 
-## Overview
+---
 
-This repository models how corporate administrative events—such as accounts filings and confirmation statements—can be represented as a time-ordered sequence.  
-It serves as a private R&D environment for refining orchestration logic before potential adaptation to other jurisdictions, including the Indonesian OSS/AHU systems.
+## 🧩 Overview
 
-## Repository layout (as of October 2025)
+The **Eckohaus Orchestration Pilot** is an internal proof-of-concept that connects Companies House data with automated audit trails and reminder systems.
 
-```plaintext
+It operates across **test**, **live**, and **weekly** workflows, using GitHub Actions to:
+- Query Companies House APIs
+- Archive and version responses as JSON
+- Append entries to a persistent orchestration ledger
+- Prepare for future event-sequenced automation (accounts & confirmation filings)
+
+---
+
+## 📂 Repository Layout (as of October 2025)
+```
 Eckohaus-Orchestration-Pilot/
 │
 ├── README.md
@@ -19,26 +27,53 @@ Eckohaus-Orchestration-Pilot/
 ├── orchestration-ledger.md
 │   → Event-sequenced compliance log (pre-filing, filing, post-filing).
 │
+├── CHANGELOG.md
+│   → Versioned changelog following Keep a Changelog 1.1.0.
+│
 ├── .github/
 │   └── workflows/
-│       └── compliance-check.yml
-│       → Workflow stub for Companies House API status checks.
+│       ├── compliance-check.yml
+│       ├── compliance-check-live.yml
+│       └── compliance-check-weekly.yml
+│       → Automated workflows for Companies House data checks.
 │
 ├── config/
 │   └── metadata.yml
 │   → Company and jurisdictional metadata (UK ↔ Indonesia).
 │
 └── data/
-    └── sample_companyhouse.json
-    → Placeholder dataset for Companies House API responses.
+├── responses/
+└── sandbox_responses/
+→ Archived Companies House JSON responses (live & test).
 ```
+---
 
-## Status
+## ⚙️ Current Workflows
 
-Private internal research project under active development.  
-No public distribution, automation, or integration outside Eckohaus Ltd is authorised at this stage.
+| Workflow | Purpose | Status |
+|-----------|----------|--------|
+| `compliance-check.yml` | Sandbox test workflow for CH API validation | ✅ Active |
+| `compliance-check-live.yml` | Live CH data retrieval & audit logging | 🧩 In propagation stage |
+| `compliance-check-weekly.yml` | Scheduled production cycle (Mon 10:00 UTC) | ⏸ Development phase |
+
+Each workflow interacts with `config/metadata.yml` for company details and API environment parameters.  
+Live responses are archived in `/data/responses/` and recorded in `orchestration-ledger.md`.
 
 ---
 
-_© 2025 Eckohaus Ltd. All rights reserved._  
-_This repository and its contents are maintained under the **Private Use Licence** (see `LICENSE.md`)._
+## 🪶 Co-author Traceability  
+```
+Co-authored-by: system operator <wanda@openai.com>
+Co-authored-by: system administrator  <info@eckohaus.co.uk>
+```
+---
+
+### 📜 Licence
+This project is maintained under the **Eckohaus Ltd Private Use Licence**.  
+Reproduction or external redistribution is not permitted without written consent.  
+
+For further enquiries: [info@eckohaus.co.uk](mailto:info@eckohaus.co.uk)
+
+---
+
+_Last synchronised via GitHub Actions — October 2025_
