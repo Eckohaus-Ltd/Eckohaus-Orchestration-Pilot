@@ -1,11 +1,13 @@
 # config/metadata.yml
-# Core metadata for Eckohaus Orchestration Pilot
+# ---------------------------------------------------------------------------
+# Core metadata for Eckohaus Orchestration Pilot (Live Environment)
 # Used by GitHub workflows and Companies House API integration
+# ---------------------------------------------------------------------------
 
 company:
   name: "Eckohaus Ltd"
   company_number: "15451433"
-  jurisdiction: "uk"
+  jurisdiction: "UK"
   api_environment: "live"
   api_secret_ref: "CH_API_KEY_LIVE"
 
@@ -16,5 +18,7 @@ filing_cycle:
 
 metadata:
   created: "2025-10-19"
+  last_updated: "2025-10-19"
   maintainer: "Corvin Nehal Dhali"
   repository: "Eckohaus-Orchestration-Pilot"
+  environment_status: "active"
