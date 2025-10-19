@@ -1,12 +1,20 @@
+# ---------------------------------------------------------------------------
+# Eckohaus Orchestration Pilot
+# Compliance Check (Companies House - Live)
+# ---------------------------------------------------------------------------
+# Runs manually or via schedule to query the Companies House API for live
+# company data, archive responses, and update orchestration-ledger.md
+# ---------------------------------------------------------------------------
+
 name: Compliance Check (Companies House - Live)
 
 on:
-  workflow_dispatch:  # Manual run from the Actions tab
-  # schedule:
-  #   - cron: "0 10 * * 1"  # Disabled during development
+  workflow_dispatch:  # Manual trigger
+  schedule:
+    - cron: "0 10 * * 1"  # Every Monday at 10:00 UTC (weekly live check)
 
 permissions:
-  contents: write  # allow ledger commits
+  contents: write  # allow workflow to commit ledger updates
 
 jobs:
   check-company-status:
@@ -42,19 +50,26 @@ jobs:
           echo "HTTP status: $STATUS_CODE"
           echo "status=$STATUS_CODE" >> $GITHUB_OUTPUT
 
-      - name: Retry once after 30 minutes on 404
+      - name: Conditional weekday retry on 404 (UK hours)
         if: steps.ch_query.outputs.status == '404'
         env:
           CH_API_KEY: ${{ secrets.CH_API_KEY_LIVE }}
           COMPANY_NUMBER: ${{ steps.metadata.outputs.company_number }}
         run: |
-          echo "Got 404 from Companies House; waiting 30 minutes then retrying…"
-          sleep 1800
-          AUTH_HEADER=$(echo -n "$CH_API_KEY:" | base64)
-          curl -s -H "Authorization: Basic $AUTH_HEADER" \
-               "https://api.company-information.service.gov.uk/company/$COMPANY_NUMBER" \
-               -o response_live.json
-          echo "✅ Retried query complete"
+          # Retry only during UK business hours (Mon–Fri, 09:00–17:00 UTC)
+          UK_HOUR=$(date -u +"%H")
+          UK_DAY=$(date -u +"%u")  # 1=Mon … 7=Sun
+          if [ "$UK_DAY" -ge 1 ] && [ "$UK_DAY" -le 5 ] && [ "$UK_HOUR" -ge 9 ] && [ "$UK_HOUR" -lt 17 ]; then
+            echo "🕒 Within UK business hours; waiting 30 minutes then retrying…"
+            sleep 1800
+            AUTH_HEADER=$(echo -n "$CH_API_KEY:" | base64)
+            curl -s -H "Authorization: Basic $AUTH_HEADER" \
+                 "https://api.company-information.service.gov.uk/company/$COMPANY_NUMBER" \
+                 -o response_live.json
+            echo "✅ Retried query complete"
+          else
+            echo "🕓 Outside UK business hours — skipping retry until next run."
+          fi
 
       - name: Display response
         run: |
@@ -91,3 +106,8 @@ jobs:
             -m "Co-authored-by: system operator <wanda@openai.com>" \
             -m "Co-authored-by: system administrator <Corvin Nehal Dhali> <info@eckohaus.co.uk>" || echo "No changes to commit"
           git push || true
+
+# ---------------------------------------------------------------------------
+# Co-authored-by: system operator <wanda@openai.com>
+# Co-authored-by: system administrator <Corvin Nehal Dhali> <info@eckohaus.co.uk>
+# ---------------------------------------------------------------------------
