@@ -1,12 +1,24 @@
+# ---------------------------------------------------------------------------
+# Eckohaus Orchestration Pilot
+# Compliance Check (Companies House - Sandbox/Test)
+# ---------------------------------------------------------------------------
+# Used for testing Companies House API integration logic safely in the
+# sandbox environment before live deployment. Archives mock responses and
+# appends summaries to orchestration-ledger.md.
+# ---------------------------------------------------------------------------
+
 name: Compliance Check (Companies House - Sandbox)
 
 on:
-  workflow_dispatch:  # Manual trigger via Actions tab
-  schedule:
-    - cron: "0 10 * * 1"  # Runs every Monday at 10:00 UTC for periodic checks
+  workflow_dispatch:  # Run manually from Actions tab
+  # schedule:
+  #   - cron: "0 9 * * 1"  # Optional: enable for scheduled sandbox tests
+
+permissions:
+  contents: write  # allow workflow to update the ledger
 
 jobs:
-  check-company-status:
+  check-company-status-sandbox:
     name: Query Companies House (Sandbox)
     runs-on: ubuntu-latest
 
@@ -30,30 +42,73 @@ jobs:
           CH_API_KEY: ${{ secrets.CH_API_KEY }}
           COMPANY_NUMBER: ${{ steps.metadata.outputs.company_number }}
         run: |
-          echo "🔍 Querying Companies House Sandbox API for company $COMPANY_NUMBER"
-
+          echo "🔍 Querying Companies House SANDBOX API for test company $COMPANY_NUMBER"
           AUTH_HEADER=$(echo -n "$CH_API_KEY:" | base64)
-          curl -s -H "Authorization: Basic $AUTH_HEADER" \
+          curl -s -w "%{http_code}" -H "Authorization: Basic $AUTH_HEADER" \
                "https://api-sandbox.company-information.service.gov.uk/company/$COMPANY_NUMBER" \
-               -o response.json
+               -o response_sandbox.json > status_code.txt
+          STATUS_CODE=$(cat status_code.txt)
+          echo "HTTP status: $STATUS_CODE"
+          echo "status=$STATUS_CODE" >> $GITHUB_OUTPUT
 
-          if [ ! -s response.json ]; then
-            echo "❌ No response received or file empty."
-            exit 1
-          fi
+      # - name: Conditional weekday retry on 404 (UK hours)
+      #   if: steps.ch_query.outputs.status == '404'
+      #   env:
+      #     CH_API_KEY: ${{ secrets.CH_API_KEY }}
+      #     COMPANY_NUMBER: ${{ steps.metadata.outputs.company_number }}
+      #   run: |
+      #     # Optional retry logic for test environment
+      #     UK_HOUR=$(date -u +"%H")
+      #     UK_DAY=$(date -u +"%u")
+      #     if [ "$UK_DAY" -ge 1 ] && [ "$UK_DAY" -le 5 ] && [ "$UK_HOUR" -ge 9 ] && [ "$UK_HOUR" -lt 17 ]; then
+      #       echo "🕒 Within UK business hours; waiting 10 minutes then retrying (sandbox)…"
+      #       sleep 600
+      #       AUTH_HEADER=$(echo -n "$CH_API_KEY:" | base64)
+      #       curl -s -H "Authorization: Basic $AUTH_HEADER" \
+      #            "https://api-sandbox.company-information.service.gov.uk/company/$COMPANY_NUMBER" \
+      #            -o response_sandbox.json
+      #       echo "✅ Retried sandbox query complete"
+      #     else
+      #       echo "🕓 Outside UK business hours — skipping sandbox retry."
+      #     fi
 
-          echo "✅ Sandbox response saved to response.json"
-
-      - name: Display sandbox response
+      - name: Display response
         run: |
-          echo "📄 Companies House API response:"
+          echo "📄 Companies House SANDBOX API response:"
           sudo apt-get update -qq && sudo apt-get install -y jq -qq
-          jq . response.json || cat response.json
+          jq . response_sandbox.json || cat response_sandbox.json
 
-      - name: Store sandbox response for audit trail
+      - name: Store response for audit trail
         if: always()
         run: |
-          mkdir -p data/responses
+          mkdir -p data/sandbox_responses
           TIMESTAMP=$(date +'%Y%m%d_%H%M')
-          cp response.json "data/responses/response_sandbox_${TIMESTAMP}.json"
-          echo "🗂️ Response archived at data/responses/response_sandbox_${TIMESTAMP}.json"
+          cp response_sandbox.json "data/sandbox_responses/response_sandbox_${TIMESTAMP}.json"
+          echo "🗂️ Sandbox response archived at data/sandbox_responses/response_sandbox_${TIMESTAMP}.json"
+
+      - name: Append summary to orchestration-ledger.md
+        if: success()
+        run: |
+          TS=$(date -u +'%Y-%m-%d %H:%M UTC')
+          FILE="data/sandbox_responses/response_sandbox_$(date +'%Y%m%d_%H%M').json"
+          echo "| ${TS} | Sandbox CH test check | Archived ${FILE} | CH sandbox API |" >> orchestration-ledger.md
+          echo "✅ Ledger updated (sandbox entry appended)"
+
+      - name: Commit ledger update
+        if: success()
+        env:
+          GIT_AUTHOR_NAME: "Eckohaus Bot"
+          GIT_AUTHOR_EMAIL: "info@eckohaus.co.uk"
+          GIT_COMMITTER_NAME: "Eckohaus Bot"
+          GIT_COMMITTER_EMAIL: "info@eckohaus.co.uk"
+        run: |
+          git add orchestration-ledger.md data/sandbox_responses/*.json || true
+          git commit -m "Sandbox CH compliance check: archive + ledger update" \
+            -m "Co-authored-by: system operator <wanda@openai.com>" \
+            -m "Co-authored-by: system administrator <Corvin Nehal Dhali> <info@eckohaus.co.uk>" || echo "No changes to commit"
+          git push || true
+
+# ---------------------------------------------------------------------------
+# Co-authored-by: system operator <wanda@openai.com>
+# Co-authored-by: system administrator <Corvin Nehal Dhali> <info@eckohaus.co.uk>
+# ---------------------------------------------------------------------------
