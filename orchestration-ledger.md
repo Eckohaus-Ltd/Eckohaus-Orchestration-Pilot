@@ -1,45 +1,80 @@
-# Eckohaus Orchestration Ledger
+# 📘 Eckohaus Orchestration Ledger  
 
-_© 2025 Eckohaus Ltd. Internal Research & Development Record_
+_© 2025 Eckohaus Ltd — Internal Research & Development Record_  
 
-This document serves as a human-readable event log for the **Eckohaus Orchestration Pilot**,  
-tracking key milestones, workflow runs, and compliance events across the Companies House API integration.
-
----
-
-## Ledger Overview
-
-Each entry below corresponds to a structured orchestration event.  
-These may include:
-- **Pre-filing** checks (e.g. account due dates, confirmation statements)
-- **Filing** events (submissions or reminders)
-- **Post-filing** validations and reconciliations
+This document serves as a **human-readable orchestration ledger** for the **Eckohaus Orchestration Pilot**,  
+tracking milestone events, workflow runs, and compliance checks related to the Companies House API integration.  
 
 ---
 
-## Event Log
+## 🧭 Ledger Overview  
+
+Each entry corresponds to a structured orchestration or compliance event.  
+These include:  
+- **Pre-filing** checks (account deadlines, confirmation statements)  
+- **Filing** events (submissions, reminders, or reconciliations)  
+- **Post-filing** validations and API-based ledger updates  
+
+---
+
+## 📅 Event Log  
 
 | Date (UTC) | Event Type | Description | Notes |
 |-------------|-------------|-------------|-------|
-| 2025-10-19 | Initialisation | Created project structure and metadata. | Repository and workflows established for test & live API. |
-| 2025-10-19 | API Test | Successful sandbox workflow run. | Returned “Resource not found” as expected (mock test). |
-| 2025-10-19 | API Live | First live Companies House query. | Returned “Invalid Authorization” (key verification stage). |
+| 2025-10-19 | Initialisation | Created repository structure and metadata. | Workflows established for test and live API integrations. |
+| 2025-10-19 | API Test (Sandbox) | Successful sandbox query. | Returned “Resource not found” as expected (mock response). |
+| 2025-10-19 | API Live (First Run) | First live Companies House query executed. | Returned “Invalid Authorization” during key verification. |
+| 2025-10-19 | API Live (Retry Scheduled) | 30-minute retry for CH API propagation. | Awaiting Companies House endpoint response (UK weekday hours). |
 
 ---
 
-## Pending Orchestration Schedule
+## 🗓️ Pending Orchestration Schedule  
 
 | Target Period | Scope | Notes |
 |----------------|--------|-------|
-| December 2025 | Pre-filing cycle | Initial live data pull and status check before January 2026 deadlines. |
-| Q1 2026 | Filing + confirmation events | To synchronise Companies House filings with HMRC PAYE and pension reconciliations. |
-| Mid-2026 | API integration review | Assess Companies House → internal ledger consistency for future automation. |
+| December 2025 | Pre-filing cycle | Initial live data pull and company status validation before January 2026 deadlines. |
+| Q1 2026 | Filing + confirmation events | Sync Companies House filings with HMRC PAYE + pension reconciliation. |
+| Mid-2026 | API integration review | Validate CH → internal ledger data consistency for next automation phase. |
+
+> _All future schedule entries are provisional until confirmed against Companies House and HMRC filing data._  
 
 ---
 
-_All future schedule events are provisional until verified against Companies House and HMRC confirmation dates._
+## ⚙️ Automation Metadata  
+
+| Field | Value |
+|-------|--------|
+| Repository | `Eckohaus-Orchestration-Pilot` |
+| Environment | Live + Sandbox |
+| Primary API Key Ref | `CH_API_KEY_LIVE` |
+| Sandbox API Key Ref | `CH_API_KEY` |
+| Archive Directory | `/data/responses/` |
+| Maintainer | Corvin Nehal Dhali |
+| Audit Reviewer | System Operator (`wanda@openai.com`) |
+| Status | Active (Development-linked orchestration) |
 
 ---
 
-_Maintained internally under the [Private Use Licence](./LICENSE.md)._  
-_Contact: info@eckohaus.blog_
+### 🪶 Co-author Traceability
+```
+Co-authored-by: system operator <wanda@openai.com>  
+Co-authored-by: system administrator <Corvin Nehal Dhali> <info@eckohaus.co.uk>
+```
+---
+
+### 🗂️ Next Steps  
+- [ ] Confirm first successful live API response after Monday retry window.  
+- [ ] Enable weekly cron workflow once propagation verified.  
+- [ ] Extend ledger schema to include filing type (Accounts / Confirmation Statement) in v2.  
+- [ ] Automate JSON parsing for CH → ledger sync summaries.  
+
+---
+
+📄 _Maintained internally under the [Private Use Licence](./LICENSE.md)_  
+📧 _Contact: info@eckohaus.blog_  
+_Last synchronised via GitHub Actions on 2025-10-19._
+
+
+
+
+
