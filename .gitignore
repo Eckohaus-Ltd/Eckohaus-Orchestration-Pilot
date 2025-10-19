@@ -1,10 +1,26 @@
 # Eckohaus Orchestration Pilot
 # Ignore system, build, and temporary data files
 
+# macOS and system
 .DS_Store
+Thumbs.db
+
+# Logs and temp files
 *.log
 *.tmp
 *.bak
+
+# Local environment and credentials
+.env
+secrets/
+*.key
+*.pem
+
+# Data responses and test outputs
+data/responses/
 data/*.json
 data/*.csv
-secrets/
+
+# IDE and editor folders
+.vscode/
+.idea/
