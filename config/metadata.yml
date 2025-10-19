@@ -3,11 +3,11 @@
 # Used by GitHub workflows and Companies House API integration
 
 company:
-  name: "Eckohaus Ltd (Sandbox)"
-  company_number: "00000000"
-  jurisdiction: "uk-test"
-  api_environment: "test"
-  api_secret_ref: "CH_API_KEY"
+  name: "Eckohaus Ltd"
+  company_number: "15451433"
+  jurisdiction: "uk"
+  api_environment: "live"
+  api_secret_ref: "CH_API_KEY_LIVE"
 
 filing_cycle:
   accounts_due: "2026-10-30"
