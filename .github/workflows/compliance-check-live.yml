@@ -6,7 +6,7 @@ on:
     - cron: "0 10 * * 1"  # Runs every Monday at 10:00 UTC for periodic live checks
 
 permissions:
-  contents: read
+  contents: write  # allow ledger commits
 
 jobs:
   check-company-status:
@@ -69,3 +69,25 @@ jobs:
           TIMESTAMP=$(date +'%Y%m%d_%H%M')
           cp response_live.json "data/responses/response_live_${TIMESTAMP}.json"
           echo "🗂️ Response archived at data/responses/response_live_${TIMESTAMP}.json"
+
+      - name: Append summary to orchestration-ledger.md
+        if: success()
+        run: |
+          TS=$(date -u +'%Y-%m-%d %H:%M UTC')
+          FILE="data/responses/response_live_$(date +'%Y%m%d_%H%M').json"
+          echo "| ${TS} | Weekly CH live check | Archived ${FILE} | CH live API |" >> orchestration-ledger.md
+          echo "✅ Ledger updated"
+
+      - name: Commit ledger update
+        if: success()
+        env:
+          GIT_AUTHOR_NAME: "Eckohaus Bot"
+          GIT_AUTHOR_EMAIL: "info@eckohaus.co.uk"
+          GIT_COMMITTER_NAME: "Eckohaus Bot"
+          GIT_COMMITTER_EMAIL: "info@eckohaus.co.uk"
+        run: |
+          git add orchestration-ledger.md data/responses/*.json || true
+          git commit -m "Weekly CH live check: archive + ledger update" \
+            -m "Co-authored-by: system operator <wanda@openai.com>" \
+            -m "Co-authored-by: system administrator <Corvin Nehal Dhali> <info@eckohaus.co.uk>" || echo "No changes to commit"
+          git push || true
