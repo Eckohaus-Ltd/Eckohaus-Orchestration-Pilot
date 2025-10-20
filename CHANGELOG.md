@@ -42,6 +42,28 @@ _Semantic versioning: MAJOR.MINOR.PATCH_
 Co-authored-by: system operator <wanda@openai.com>  
 Co-authored-by: system administrator <Corvin Nehal Dhali> <info@eckohaus.co.uk>
 ```
+
+---
+
+## [2025-10-20] — 🛰️ Live API Orchestration Verified
+**Summary:**  
+First successful live run of the Companies House compliance workflow for  
+Eckohaus Ltd (Company No. 15451433).
+
+### 🧩 Details
+- Live API key authenticated successfully (`CH_API_KEY_LIVE`)
+- Response archived at `data/responses/response_live_20251020_0320.json`
+- Ledger auto-updated and committed (`commit 1f814c1`)
+- Workflow parity confirmed with sandbox configuration
+
+---
+
+### 🪶 Co-author Traceability  
+```
+Co-authored-by: system operator <wanda@openai.com>  
+Co-authored-by: system administrator <Corvin Nehal Dhali> <info@eckohaus.co.uk>
+```
+
 ---
 
 © 2025 Eckohaus Ltd — Internal Orchestration Record  
