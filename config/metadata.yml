@@ -1,24 +1,49 @@
+# ---------------------------------------------------------------------------
 # config/metadata.yml
 # ---------------------------------------------------------------------------
-# Core metadata for Eckohaus Orchestration Pilot (Live Environment)
-# Used by GitHub workflows and Companies House API integration
+# Core metadata for Eckohaus Orchestration Pilot
+# Used by GitHub Actions workflows and Companies House API integrations.
+# This file provides the canonical reference for environment, company, and
+# filing parameters used throughout orchestration pipelines.
 # ---------------------------------------------------------------------------
 
 company:
   name: "Eckohaus Ltd"
   company_number: "15451433"
-  jurisdiction: "UK"
-  api_environment: "live"
-  api_secret_ref: "CH_API_KEY_LIVE"
+  jurisdiction: "GB"                # ISO 3166-1 alpha-2 (GB = United Kingdom)
+  api_environment: "live"           # One of: sandbox | live
+  api_secret_ref: "CH_API_KEY_LIVE" # GitHub Secret name reference
+  incorporation_date: "2023-03-01"
+  registered_office: "London, United Kingdom"
 
 filing_cycle:
-  accounts_due: "2026-10-30"
-  confirmation_due: "2026-01-30"
-  reminders_enabled: true
+  accounts_due: "2026-10-30"        # Next accounts filing due date (YYYY-MM-DD)
+  confirmation_due: "2026-01-30"    # Next confirmation statement due date
+  reminders_enabled: true           # Enables GitHub-based compliance reminders
+  check_interval_days: 7            # Days between live compliance runs
+
+orchestration:
+  repository: "Eckohaus-Orchestration-Pilot"
+  maintainer: "Corvin Nehal Dhali"
+  maintainer_email: "info@eckohaus.co.uk"
+  bot_identity: "Eckohaus Bot"
+  last_reviewed: "2025-10-31"
+  environment_status: "active"
+  enable_audit_trail: true
+  auto_commit_enabled: true
 
 metadata:
   created: "2025-10-19"
-  last_updated: "2025-10-19"
-  maintainer: "Corvin Nehal Dhali"
-  repository: "Eckohaus-Orchestration-Pilot"
-  environment_status: "active"
+  last_updated: "2025-10-31"
+  schema_version: "2.1"
+  revision_note: >
+    Updated to include orchestration and compliance metadata for improved
+    alignment with GitHub workflow parsing and CH API integration.
+  license: "Eckohaus Internal Use Only"
+
+# ---------------------------------------------------------------------------
+# Notes:
+# - company.* fields are parsed by workflow scripts (AWK/YAML extraction)
+# - filing_cycle.* informs reminder and compliance intervals
+# - orchestration.* fields assist with repo automation and audit trails
+# ---------------------------------------------------------------------------
