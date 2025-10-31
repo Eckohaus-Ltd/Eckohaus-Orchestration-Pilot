@@ -29,19 +29,26 @@ jobs:
         id: metadata
         run: |
           echo "📦 Loading metadata from config/metadata.yml"
-          # Extract and sanitize YAML values (remove quotes / trim whitespace)
-          COMPANY_NAME=$(grep '^name:' config/metadata.yml | sed -E "s/name:[[:space:]]*['\"]?(.*)['\"]?/\1/")
-          COMPANY_NUMBER=$(grep '^company_number:' config/metadata.yml | sed -E "s/company_number:[[:space:]]*['\"]?([0-9A-Za-z]+)['\"]?/\1/")
+
+          # Extract and sanitize nested YAML values from company: block
+          COMPANY_NAME=$(grep 'name:' config/metadata.yml | head -1 | sed -E "s/.*name:[[:space:]]*['\"]?([^#'\"]+)['\"]?.*/\1/")
+          COMPANY_NUMBER=$(grep 'company_number:' config/metadata.yml | head -1 | sed -E "s/.*company_number:[[:space:]]*['\"]?([^#'\"]+)['\"]?.*/\1/")
+          API_ENVIRONMENT=$(grep 'api_environment:' config/metadata.yml | head -1 | sed -E "s/.*api_environment:[[:space:]]*['\"]?([^#'\"]+)['\"]?.*/\1/")
+          API_SECRET_REF=$(grep 'api_secret_ref:' config/metadata.yml | head -1 | sed -E "s/.*api_secret_ref:[[:space:]]*['\"]?([^#'\"]+)['\"]?.*/\1/")
 
           # Debugging visibility
           echo "Debug → COMPANY_NAME: '$COMPANY_NAME'"
           echo "Debug → COMPANY_NUMBER: '$COMPANY_NUMBER'"
+          echo "Debug → API_ENVIRONMENT: '$API_ENVIRONMENT'"
+          echo "Debug → API_SECRET_REF: '$API_SECRET_REF'"
 
           # Export to GITHUB_OUTPUT
           echo "company_name=$COMPANY_NAME" >> $GITHUB_OUTPUT
           echo "company_number=$COMPANY_NUMBER" >> $GITHUB_OUTPUT
+          echo "api_environment=$API_ENVIRONMENT" >> $GITHUB_OUTPUT
+          echo "api_secret_ref=$API_SECRET_REF" >> $GITHUB_OUTPUT
 
-          echo "✅ Loaded company: $COMPANY_NAME ($COMPANY_NUMBER)"
+          echo "✅ Loaded company: $COMPANY_NAME ($COMPANY_NUMBER) — Env: $API_ENVIRONMENT"
 
       - name: Query Companies House API (Live)
         id: ch_query
@@ -105,7 +112,7 @@ jobs:
         run: |
           TS=$(date -u +'%Y-%m-%d %H:%M UTC')
           FILE="data/responses/response_live_$(date +'%Y%m%d_%H%M').json"
-          echo "| ${TS} | Weekly CH live check | Archived ${FILE} | CH live API |" >> orchestration-ledger.md
+          echo "| ${TS} | Live CH API check | Archived ${FILE} | CH live API |" >> orchestration-ledger.md
           echo "✅ Ledger updated"
 
       - name: Commit ledger update
@@ -117,7 +124,8 @@ jobs:
           GIT_COMMITTER_EMAIL: "info@eckohaus.co.uk"
         run: |
           git add orchestration-ledger.md data/responses/*.json || true
-          git commit -m "Weekly CH live check: archive + ledger update" \
+          git commit -m "fix(metadata): add nested YAML parser for live orchestration" \
+            -m "Refines metadata parsing to support nested company fields in config/metadata.yml. Aligns live workflow with sandbox orchestration structure." \
             -m "Co-authored-by: system operator <wanda@openai.com>" \
             -m "Co-authored-by: system administrator <Corvin Nehal Dhali> <info@eckohaus.co.uk>" || echo "No changes to commit"
           git push || true
