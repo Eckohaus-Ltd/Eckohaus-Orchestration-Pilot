@@ -31,8 +31,8 @@ jobs:
         run: |
           echo "📦 Loading metadata from config/metadata.yml"
           # Extract and sanitize YAML values (remove quotes / trim whitespace)
-          COMPANY_NAME=$(grep '^name:' config/metadata.yml | sed -E "s/name:[[:space:]]*['\"]?(.*)['\"]?/\1/")
-          COMPANY_NUMBER=$(grep '^company_number:' config/metadata.yml | sed -E "s/company_number:[[:space:]]*['\"]?([0-9A-Za-z]+)['\"]?/\1/")
+          COMPANY_NAME=$(grep '^name:' config/metadata.yml | sed -E "s/name:[[:space:]]*['\"]?([^'\"]+)['\"]?/\1/")
+          COMPANY_NUMBER=$(grep '^company_number:' config/metadata.yml | sed -E "s/company_number:[[:space:]]*['\"]?([^'\"]+)['\"]?/\1/")
 
           # Debugging visibility
           echo "Debug → COMPANY_NAME: '$COMPANY_NAME'"
@@ -118,7 +118,8 @@ jobs:
           GIT_COMMITTER_EMAIL: "info@eckohaus.co.uk"
         run: |
           git add orchestration-ledger.md data/sandbox_responses/*.json || true
-          git commit -m "Sandbox CH compliance check: archive + ledger update" \
+          git commit -m "fix(metadata): refine sed regex for YAML field extraction" \
+            -m "Sandbox CH compliance check: archive + ledger update" \
             -m "Co-authored-by: system operator <wanda@openai.com>" \
             -m "Co-authored-by: system administrator <Corvin Nehal Dhali> <info@eckohaus.co.uk>" || echo "No changes to commit"
           git push || true
