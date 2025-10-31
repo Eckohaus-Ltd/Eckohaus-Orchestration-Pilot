@@ -30,19 +30,24 @@ jobs:
         id: metadata
         run: |
           echo "📦 Loading metadata from config/metadata.yml"
-          # Extract and sanitize YAML values (remove quotes / trim whitespace)
-          COMPANY_NAME=$(grep '^name:' config/metadata.yml | sed -E "s/name:[[:space:]]*['\"]?(.*)['\"]?/\1/")
-          COMPANY_NUMBER=$(grep '^company_number:' config/metadata.yml | sed -E "s/company_number:[[:space:]]*['\"]?([0-9A-Za-z]+)['\"]?/\1/")
 
-          # Debugging visibility
+          # Extract and sanitize nested YAML values from company: block
+          COMPANY_NAME=$(grep 'name:' config/metadata.yml | head -1 | sed -E "s/.*name:[[:space:]]*['\"]?([^#'\"]+)['\"]?.*/\1/")
+          COMPANY_NUMBER=$(grep 'company_number:' config/metadata.yml | head -1 | sed -E "s/.*company_number:[[:space:]]*['\"]?([^#'\"]+)['\"]?.*/\1/")
+          API_ENVIRONMENT=$(grep 'api_environment:' config/metadata.yml | head -1 | sed -E "s/.*api_environment:[[:space:]]*['\"]?([^#'\"]+)['\"]?.*/\1/")
+          API_SECRET_REF=$(grep 'api_secret_ref:' config/metadata.yml | head -1 | sed -E "s/.*api_secret_ref:[[:space:]]*['\"]?([^#'\"]+)['\"]?.*/\1/")
+
           echo "Debug → COMPANY_NAME: '$COMPANY_NAME'"
           echo "Debug → COMPANY_NUMBER: '$COMPANY_NUMBER'"
+          echo "Debug → API_ENVIRONMENT: '$API_ENVIRONMENT'"
+          echo "Debug → API_SECRET_REF: '$API_SECRET_REF'"
 
-          # Export to GITHUB_OUTPUT
           echo "company_name=$COMPANY_NAME" >> $GITHUB_OUTPUT
           echo "company_number=$COMPANY_NUMBER" >> $GITHUB_OUTPUT
+          echo "api_environment=$API_ENVIRONMENT" >> $GITHUB_OUTPUT
+          echo "api_secret_ref=$API_SECRET_REF" >> $GITHUB_OUTPUT
 
-          echo "✅ Loaded company: $COMPANY_NAME ($COMPANY_NUMBER)"
+          echo "✅ Loaded company: $COMPANY_NAME ($COMPANY_NUMBER) — Env: $API_ENVIRONMENT"
 
       - name: Query Companies House API (Weekly)
         id: ch_query
@@ -52,7 +57,6 @@ jobs:
         run: |
           echo "🔍 Querying Companies House LIVE API for weekly company status check: $COMPANY_NUMBER"
 
-          # Fail-fast guard: exit cleanly if API key not set
           if [ -z "$CH_API_KEY" ]; then
             echo "❌ No API key detected — skipping this run safely."
             exit 0
@@ -72,9 +76,8 @@ jobs:
           CH_API_KEY: ${{ secrets.CH_API_KEY_LIVE }}
           COMPANY_NUMBER: ${{ steps.metadata.outputs.company_number }}
         run: |
-          # Retry only during UK business hours (Mon–Fri, 09:00–17:00 UTC)
           UK_HOUR=$(date -u +"%H")
-          UK_DAY=$(date -u +"%u")  # 1=Mon … 7=Sun
+          UK_DAY=$(date -u +"%u")
           if [ "$UK_DAY" -ge 1 ] && [ "$UK_DAY" -le 5 ] && [ "$UK_HOUR" -ge 9 ] && [ "$UK_HOUR" -lt 17 ]; then
             echo "🕒 Within UK business hours; waiting 15 minutes then retrying…"
             sleep 900
