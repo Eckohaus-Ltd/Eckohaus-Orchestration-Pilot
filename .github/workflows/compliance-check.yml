@@ -30,19 +30,26 @@ jobs:
         id: metadata
         run: |
           echo "📦 Loading metadata from config/metadata.yml"
-          # Extract and sanitize YAML values (remove quotes / trim whitespace)
-          COMPANY_NAME=$(grep '^name:' config/metadata.yml | sed -E "s/name:[[:space:]]*['\"]?([^'\"]+)['\"]?/\1/")
-          COMPANY_NUMBER=$(grep '^company_number:' config/metadata.yml | sed -E "s/company_number:[[:space:]]*['\"]?([^'\"]+)['\"]?/\1/")
+
+          # Extract nested YAML values from `company:` block
+          COMPANY_NAME=$(grep 'name:' config/metadata.yml | head -1 | sed -E "s/.*name:[[:space:]]*['\"]?([^'\"]+)['\"]?/\1/")
+          COMPANY_NUMBER=$(grep 'company_number:' config/metadata.yml | head -1 | sed -E "s/.*company_number:[[:space:]]*['\"]?([^'\"]+)['\"]?/\1/")
+          API_ENVIRONMENT=$(grep 'api_environment:' config/metadata.yml | head -1 | sed -E "s/.*api_environment:[[:space:]]*['\"]?([^'\"]+)['\"]?/\1/")
+          API_SECRET_REF=$(grep 'api_secret_ref:' config/metadata.yml | head -1 | sed -E "s/.*api_secret_ref:[[:space:]]*['\"]?([^'\"]+)['\"]?/\1/")
 
           # Debugging visibility
           echo "Debug → COMPANY_NAME: '$COMPANY_NAME'"
           echo "Debug → COMPANY_NUMBER: '$COMPANY_NUMBER'"
+          echo "Debug → API_ENVIRONMENT: '$API_ENVIRONMENT'"
+          echo "Debug → API_SECRET_REF: '$API_SECRET_REF'"
 
           # Export to GITHUB_OUTPUT
           echo "company_name=$COMPANY_NAME" >> $GITHUB_OUTPUT
           echo "company_number=$COMPANY_NUMBER" >> $GITHUB_OUTPUT
+          echo "api_environment=$API_ENVIRONMENT" >> $GITHUB_OUTPUT
+          echo "api_secret_ref=$API_SECRET_REF" >> $GITHUB_OUTPUT
 
-          echo "✅ Loaded company: $COMPANY_NAME ($COMPANY_NUMBER)"
+          echo "✅ Loaded company: $COMPANY_NAME ($COMPANY_NUMBER) — Env: $API_ENVIRONMENT"
 
       - name: Query Companies House API (Sandbox)
         id: ch_query
@@ -65,27 +72,6 @@ jobs:
           STATUS_CODE=$(cat status_code.txt)
           echo "HTTP status: $STATUS_CODE"
           echo "status=$STATUS_CODE" >> $GITHUB_OUTPUT
-
-      # Optional retry logic (commented by default)
-      # - name: Conditional weekday retry on 404 (UK hours)
-      #   if: steps.ch_query.outputs.status == '404'
-      #   env:
-      #     CH_API_KEY: ${{ secrets.CH_API_KEY }}
-      #     COMPANY_NUMBER: ${{ steps.metadata.outputs.company_number }}
-      #   run: |
-      #     UK_HOUR=$(date -u +"%H")
-      #     UK_DAY=$(date -u +"%u")
-      #     if [ "$UK_DAY" -ge 1 ] && [ "$UK_DAY" -le 5 ] && [ "$UK_HOUR" -ge 9 ] && [ "$UK_HOUR" -lt 17 ]; then
-      #       echo "🕒 Within UK business hours; waiting 10 minutes then retrying (sandbox)…"
-      #       sleep 600
-      #       AUTH_HEADER=$(echo -n "$CH_API_KEY:" | base64)
-      #       curl -s -H "Authorization: Basic $AUTH_HEADER" \
-      #            "https://api-sandbox.company-information.service.gov.uk/company/$COMPANY_NUMBER" \
-      #            -o response_sandbox.json
-      #       echo "✅ Retried sandbox query complete"
-      #     else
-      #       echo "🕓 Outside UK business hours — skipping sandbox retry."
-      #     fi
 
       - name: Display response
         run: |
@@ -118,8 +104,8 @@ jobs:
           GIT_COMMITTER_EMAIL: "info@eckohaus.co.uk"
         run: |
           git add orchestration-ledger.md data/sandbox_responses/*.json || true
-          git commit -m "fix(metadata): refine sed regex for YAML field extraction" \
-            -m "Sandbox CH compliance check: archive + ledger update" \
+          git commit -m "fix(metadata): add nested YAML parser for sandbox orchestration" \
+            -m "Ensures COMPANY_NAME, COMPANY_NUMBER, API_ENVIRONMENT, and API_SECRET_REF are correctly parsed from nested company: block." \
             -m "Co-authored-by: system operator <wanda@openai.com>" \
             -m "Co-authored-by: system administrator <Corvin Nehal Dhali> <info@eckohaus.co.uk>" || echo "No changes to commit"
           git push || true
