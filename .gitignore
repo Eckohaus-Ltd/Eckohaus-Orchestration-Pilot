@@ -17,9 +17,13 @@ secrets/
 *.pem
 
 # Data responses and test outputs
-data/responses/
 data/*.json
 data/*.csv
+
+# Ignore most response data, but keep sandbox and live for audit tracking
+data/responses/
+!data/responses/
+!data/sandbox_responses/
 
 # IDE and editor folders
 .vscode/
