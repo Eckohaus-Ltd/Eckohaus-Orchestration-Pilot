@@ -89,3 +89,4 @@ _Last synchronised via GitHub Actions on 2025-10-19._
 | 2025-10-31 00:13 UTC | Sandbox CH test check | Archived data/sandbox_responses/response_sandbox_20251031_0013.json | CH sandbox API |
 | 2025-10-31 00:18 UTC | Sandbox CH test check | Archived data/sandbox_responses/response_sandbox_20251031_0018.json | CH sandbox API |
 | 2025-10-31 00:29 UTC | Live CH API check | Archived data/responses/response_live_20251031_0029.json | CH live API |
+| 2025-10-31 00:40 UTC | Live CH API check | Archived data/responses/response_live_20251031_0040.json | CH live API |
