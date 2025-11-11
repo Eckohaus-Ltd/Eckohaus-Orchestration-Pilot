@@ -184,7 +184,8 @@ class WorkflowLogAnalyzer:
                         'step': current_step
                     })
             
-            # Track API calls
+            # Track API calls - simple log pattern detection for analysis only
+            # Note: This is log analysis, not URL sanitization
             if 'api.company-information.service.gov.uk' in line or 'api-sandbox' in line:
                 analysis['api_calls'].append({
                     'line': line_num,
