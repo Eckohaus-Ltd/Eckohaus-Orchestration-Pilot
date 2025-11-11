@@ -41,10 +41,15 @@ Eckohaus-Orchestration-Pilot/
 │   └── metadata.yml
 │   → Company and jurisdictional metadata (UK ↔ Indonesia).
 │
-└── data/
-├── responses/
-└── sandbox_responses/
-→ Archived Companies House JSON responses (live & test).
+├── data/
+│   ├── responses/
+│   └── sandbox_responses/
+│   → Archived Companies House JSON responses (live & test).
+│
+└── scripts/
+    ├── README.md
+    └── analyze_workflow_logs.py
+    → Workflow log analysis and repository structure integration.
 ```
 ---
 
@@ -58,6 +63,28 @@ Eckohaus-Orchestration-Pilot/
 
 Each workflow interacts with `config/metadata.yml` for company details and API environment parameters.  
 Live responses are archived in `/data/responses/` and recorded in `orchestration-ledger.md`.
+
+---
+
+## 📊 Workflow Log Analysis
+
+The repository includes a Python-based log analyzer that performs line-by-line analysis of GitHub Actions workflow logs, integrating them with the repository folder and file structure.
+
+**Key Features**:
+- Line-by-line parsing of workflow execution logs
+- Integration with repository structure (`config/`, `data/`, `.github/workflows/`)
+- Error and warning detection
+- API call tracking (Companies House)
+- File operation monitoring
+- Security findings analysis (CodeQL)
+- Automated markdown report generation
+
+**Usage**:
+```bash
+python3 scripts/analyze_workflow_logs.py
+```
+
+See `scripts/README.md` for detailed documentation.
 
 ---
 
