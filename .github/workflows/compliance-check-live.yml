@@ -112,11 +112,11 @@ jobs:
         run: |
           echo "📊 Creating workflow analysis artifacts..."
           mkdir -p analysis-output
-          
+
           # Capture repository structure
           echo "=== Repository Structure ===" > analysis-output/repository-structure.txt
           tree -L 3 -a --gitignore || find . -maxdepth 3 -not -path '*/\.*' | sort >> analysis-output/repository-structure.txt
-          
+
           # Branch and commit information
           echo "" >> analysis-output/repository-structure.txt
           echo "=== Branch Information ===" >> analysis-output/repository-structure.txt
@@ -124,7 +124,7 @@ jobs:
           echo "" >> analysis-output/repository-structure.txt
           echo "=== Current Commit ===" >> analysis-output/repository-structure.txt
           git log -1 --pretty=format:"Commit: %H%nAuthor: %an <%ae>%nDate: %ad%nMessage: %s" >> analysis-output/repository-structure.txt
-          
+
           # Workflow execution metadata
           cat > analysis-output/workflow-metadata.json << EOF
           {
@@ -141,11 +141,11 @@ jobs:
             "timestamp": "$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
           }
           EOF
-          
+
           # Copy response for artifact
           cp response_live.json analysis-output/ 2>/dev/null || true
           cp status_code.txt analysis-output/ 2>/dev/null || true
-          
+
           echo "✅ Analysis artifacts created"
 
       - name: Upload workflow artifacts for analysis

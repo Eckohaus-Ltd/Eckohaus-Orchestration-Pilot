@@ -23,7 +23,7 @@ Output:
 import os
 import json
 import sys
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 import re
@@ -266,7 +266,7 @@ class ArtifactAnalyzer:
         
         with open(report_file, 'w') as f:
             f.write("# Eckohaus Orchestration Pilot - Artifact Analysis Report\n\n")
-            f.write(f"**Generated:** {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}\n\n")
+            f.write(f"**Generated:** {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M UTC')}\n\n")
             f.write("---\n\n")
             
             # Workflow Summary

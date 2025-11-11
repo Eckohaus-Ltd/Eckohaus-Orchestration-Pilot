@@ -29,7 +29,7 @@ jobs:
     name: CodeQL Security Analysis
     runs-on: ubuntu-latest
     timeout-minutes: 360
-    
+
     strategy:
       fail-fast: false
       matrix:
@@ -48,7 +48,7 @@ jobs:
           # If you wish to specify custom queries, you can do so here or in a config file.
           # By default, queries listed here will override any specified in a config file.
           # Prefix the list here with "+" to use these queries and those in the config file.
-          
+
           # Details on CodeQL's query packs refer to : https://docs.github.com/en/code-security/code-scanning/automatically-scanning-your-code-for-vulnerabilities-and-errors/configuring-code-scanning#using-queries-in-ql-packs
           # queries: security-extended,security-and-quality
 
@@ -70,26 +70,26 @@ jobs:
         run: |
           echo "📊 Capturing repository structure and branch context..."
           mkdir -p analysis-output
-          
+
           # Repository structure
           echo "=== Repository Structure ===" > analysis-output/repository-structure.txt
           tree -L 3 -a --gitignore || find . -maxdepth 3 -not -path '*/\.*' | sort >> analysis-output/repository-structure.txt
-          
+
           # Branch information
           echo "" >> analysis-output/repository-structure.txt
           echo "=== Branch Information ===" >> analysis-output/repository-structure.txt
           git branch -a >> analysis-output/repository-structure.txt
-          
+
           # Current commit details
           echo "" >> analysis-output/repository-structure.txt
           echo "=== Current Commit ===" >> analysis-output/repository-structure.txt
           git log -1 --pretty=format:"Commit: %H%nAuthor: %an <%ae>%nDate: %ad%nMessage: %s%n%b" >> analysis-output/repository-structure.txt
-          
+
           # File statistics
           echo "" >> analysis-output/repository-structure.txt
           echo "=== File Statistics ===" >> analysis-output/repository-structure.txt
           find . -type f -not -path '*/\.git/*' | wc -l | xargs echo "Total files:" >> analysis-output/repository-structure.txt
-          
+
           echo "✅ Repository structure captured"
 
       # Extract and organize CodeQL results
@@ -98,12 +98,12 @@ jobs:
         run: |
           echo "📋 Extracting CodeQL results for line-by-line analysis..."
           mkdir -p analysis-output/codeql-results
-          
+
           # Copy SARIF results if they exist
           if [ -d "sarif-results" ]; then
             cp -r sarif-results/* analysis-output/codeql-results/ 2>/dev/null || true
           fi
-          
+
           # Create a summary of CodeQL findings
           echo "=== CodeQL Analysis Summary ===" > analysis-output/codeql-summary.txt
           echo "Analysis Date: $(date -u +'%Y-%m-%d %H:%M UTC')" >> analysis-output/codeql-summary.txt
@@ -111,7 +111,7 @@ jobs:
           echo "Branch: ${GITHUB_REF#refs/heads/}" >> analysis-output/codeql-summary.txt
           echo "Commit: $GITHUB_SHA" >> analysis-output/codeql-summary.txt
           echo "" >> analysis-output/codeql-summary.txt
-          
+
           # Extract findings from SARIF if available
           if command -v jq &> /dev/null && [ -f "sarif-results/${{ matrix.language }}.sarif" ]; then
             echo "=== Findings ===" >> analysis-output/codeql-summary.txt
@@ -120,7 +120,7 @@ jobs:
           else
             echo "SARIF results not available for detailed parsing" >> analysis-output/codeql-summary.txt
           fi
-          
+
           echo "✅ CodeQL results extracted"
 
       # Create workflow execution metadata
@@ -144,7 +144,7 @@ jobs:
             "timestamp": "$(date -u +'%Y-%m-%dT%H:%M:%SZ')"
           }
           EOF
-          
+
           echo "✅ Workflow metadata created"
 
       # Upload artifacts for line-by-line analysis

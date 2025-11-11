@@ -20,7 +20,7 @@ import os
 import json
 import sys
 import argparse
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Any, Optional
 from collections import defaultdict
@@ -237,7 +237,7 @@ class ComparativeAnalyzer:
         with open(self.output_file, 'w') as f:
             f.write("# Comparative Analysis Report\n")
             f.write("## Eckohaus Orchestration Pilot - Integrated Workflow Analysis\n\n")
-            f.write(f"**Generated:** {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}\n\n")
+            f.write(f"**Generated:** {datetime.now(timezone.utc).strftime('%Y-%m-%d %H:%M:%S UTC')}\n\n")
             f.write("---\n\n")
             
             # Executive Summary
