@@ -73,7 +73,9 @@ All workflows now include comprehensive artifact generation for line-by-line ana
 - `artifact-analyzer.py` - Line-by-line artifact analysis
 - `comparative-analyzer.py` - Cross-workflow comparative analysis integrating CodeQL with compliance data
 
-For detailed usage, see [`.github/scripts/README.md`](.github/scripts/README.md).
+**Documentation**:
+- [Artifact Analysis Guide](docs/ARTIFACT_ANALYSIS_GUIDE.md) - Comprehensive usage guide
+- [Scripts README](.github/scripts/README.md) - Technical documentation for analysis scripts
 
 ---
 
